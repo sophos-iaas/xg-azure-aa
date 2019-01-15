@@ -1,0 +1,64 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0",
+  "parameters": {
+    "accountName": {
+      "type": "string"
+    },
+    "accountLocation": {
+      "type": "string"
+    }
+  },
+  "variables": {
+  	"psmodule": {
+      "name": "Posh-SSH",
+      "url": "https://devopsgallerystorage.blob.core.windows.net/packages/posh-ssh.2.0.2.nupkg"
+    },
+	"runbook": {
+        "name": "XG-LB-routing",
+        "version": "1.0.0.0",
+        "description": "This runbook configures routing for the Azure Load Balancer Standard health check on the XG nodes in the Availability Set",
+        "type": "PowerShell",
+        "scriptUri": "https://raw.githubusercontent.com/sophos-iaas/xg-azure-aa/master/shared/xg-aa.ps1"
+    },
+	"job": {
+		"name": "Run_XG-LB-routing"
+	}
+  },
+  "resources": [
+    {
+	 "name": "[concat(parameters('accountName'), '/', variables('psmodule').name)]",
+	 "type": "Microsoft.Automation/automationAccounts/modules",
+	 "apiVersion": "2015-10-31",
+	 "tags": {},
+	 "properties": {
+	   "contentLink": {
+		 "uri": "[variables('psmodule').url]"
+		}	
+	 }
+	},
+	{
+	 "name": "[concat(parameters('accountName'), '/', variables('runbook').name)]",
+	 "type": "Microsoft.Automation/automationAccounts/runbooks",
+	 "apiVersion": "2015-10-31",
+	 "location": "[parameters('accountLocation')]",
+	 "tags": {},
+	 "properties": {
+	   "runbookType": "[variables('runbook').type]",
+	   "logProgress": "false",
+	   "logVerbose": "false",
+	   "description": "[variables('runbook').description]",
+	   "publishContentLink": {
+		 "uri": "[variables('runbook').scriptUri]",
+		 "version": "[variables('runbook').version]"
+		}
+	 }
+	}
+  ],
+  "outputs": {
+		"runbookRef": {
+            "value": "[variables('runbook').name]",
+            "type": "string"
+        }
+	}
+}

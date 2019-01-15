@@ -1,0 +1,105 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subnetRef": {
+            "type": "string"
+        },
+		"privateIP": {
+            "type": "string"
+        },
+		"loadBalancerName": {
+            "type": "string"
+        },
+        "numberOfInstances": {
+            "type": "int"
+        }
+    },
+    "variables": {
+        "lbFrontendName": "IntloadBalancerFrontEnd",
+        "lbBackendName": "IntloadBalancerBackEnd",
+        "probeName": "Probe-Proxy-On-3128",
+        "lbID": "[resourceId('Microsoft.Network/loadBalancers',parameters('loadBalancerName'))]",
+        "lbFrontendID": "[concat(variables('lbID'),'/frontendIPConfigurations/',variables('lbFrontendName'))]",
+        "lbBackendID": "[concat(variables('lbID'),'/backendAddressPools/',variables('lbBackendName'))]",
+        "lbProbeID": "[concat(variables('lbID'),'/probes/',variables('probeName'))]"     
+    },
+    "resources": [
+        {
+            "apiVersion": "2017-08-01",
+            "name": "[parameters('loadBalancerName')]",
+            "type": "Microsoft.Network/loadBalancers",
+            "location": "[resourceGroup().location]",
+			"sku":
+            {
+                "name": "Standard"
+            },
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[variables('lbFrontendName')]",
+                        "properties": {
+                            "subnet": {
+							"id": "[parameters('subnetRef')]"
+							},
+							"privateIPAddress": "[parameters('privateIP')]",
+							"privateIPAllocationMethod": "Static"
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[variables('lbBackendName')]"
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "AnyTCPUDP",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[variables('lbFrontendID')]"
+                            },
+                            "frontendPort": 0,
+                            "backendPort": 0,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "All",
+                            "loadDistribution": "SourceIP",
+                            "backendAddressPool": {
+                                "id": "[variables('lbBackendID')]"
+                            },
+                            "probe": {
+                                "id": "[variables('lbProbeID')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "[variables('probeName')]",
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 3128,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "outputs": {
+        "lbID": {
+            "value": "[variables('lbID')]",
+            "type": "string"
+        },
+        "lbFrontendID": {
+            "value": "[variables('lbFrontendID')]",
+            "type": "string"
+        },
+        "lbBackendID": {
+            "value": "[variables('lbBackendID')]",
+            "type": "string"
+        }
+    }
+}
