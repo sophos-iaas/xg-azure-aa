@@ -100,7 +100,7 @@
                 "description": "Prefix for the LAN side Subnet. Note that each node only requires a single address, so it's recommended to limit subnet size to /24 or smaller."
             }
         },
-		"LoadbalancerIntIP": {
+        "LoadbalancerIntIP": {
             "type": "string",
             "defaultValue": "10.0.2.250",
             "metadata": {
@@ -242,22 +242,29 @@
                 "description": "Number of XG Firewall instances to be deployed."
             }
         },
-		"automationAccountNewOrExisting": {
-			"type": "string",
-			"allowedValues": [
-				"new",
-				"existing"
-			],
-			"metadata": {
-				"description": "Create a new Azure Automation account or select an existing account to use for XG automation. WARNING: Automation account names are unique, so reusing an account name when creating a new account will overwirte the existing account!."
-			}
-		},
-		"automationAccountName": {
-			"type": "string",
-			"metadata": {
-				"description": "Enter the name of the Azure Automation account you wish to use / create. Note that when creating a new account the account name must be between 6 to 50 characters, and can contain only letters, numbers, and hyphens."
-			}
-		}
+        "automationAccountNewOrExisting": {
+            "type": "string",
+            "allowedValues": [
+                "new",
+                "existing"
+            ],
+            "metadata": {
+                "description": "Create a new Azure Automation account or select an existing account to use for XG automation. WARNING: Automation account names are unique, so reusing an account name when creating a new account will overwirte the existing account!."
+            }
+        },
+        "automationAccountName": {
+            "type": "string",
+            "metadata": {
+                "description": "Enter the name of the Azure Automation account you wish to use / create. Note that when creating a new account the account name must be between 6 to 50 characters, and can contain only letters, numbers, and hyphens."
+            }
+        },
+        "devFwBlobUrlPrefix": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "For development only! Specifies the blob URL prefix of a development firmware. Example: https://exampleimages.blob.core.windows.net/azi/SFAZ01_SO01.Release_17.0_CLOUD.17.00.0.007.byol"
+            }
+        }
     },
     "variables": {
         "publicIpTemplate": "[concat(parameters('baseUrl'),'/shared/publicip-',parameters('publicIpNewOrExisting'),'.json')]",
@@ -268,19 +275,19 @@
         "interfaceWanTemplate": "[concat(parameters('baseUrl'),'/shared/interface-wan.json')]",
         "interfaceLanTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lan.json')]",
         "interfaceLBTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lb.json')]",
-		"interfaceLBIntTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lbint.json')]",
-        "vmTemplate": "[concat(parameters('baseUrl'),'/shared/vm.json')]",
+        "interfaceLBIntTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lbint.json')]",
+        "vmTemplate": "[concat(parameters('baseUrl'),if(equals(parameters('devFwBlobUrlPrefix'), ''), '/shared/vm.json', '/shared/vm_dev.json'))]",
         "LBTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancer.json')]",
-		"LBIntTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancerint.json')]",
+        "LBIntTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancerint.json')]",
         "securityRuleAllowHTTPTemplate": "[concat(parameters('baseUrl'),'/shared/inboundSecurityRuleAllowHttp.json')]",
         "apiVersion": {
             "resources": {
                 "deployments": "2017-08-01"
             }
         },
-		"accountTemplate": "[concat(parameters('baseUrl'),'/shared/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json')]",
-		"lanNetwork": "[substring(parameters('lanPrefix'),0,sub(length(parameters('lanPrefix')), 4))]",
-		"wanNetwork": "[substring(parameters('wanPrefix'),0,sub(length(parameters('wanPrefix')), 4))]"
+        "accountTemplate": "[concat(parameters('baseUrl'),'/shared/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json')]",
+        "lanNetwork": "[substring(parameters('lanPrefix'),0,sub(length(parameters('lanPrefix')), 4))]",
+        "wanNetwork": "[substring(parameters('wanPrefix'),0,sub(length(parameters('wanPrefix')), 4))]"
     },
     "resources": [
         {
@@ -505,10 +512,10 @@
                     "subnetRef": {
                         "value": "[reference('SettingUpVirtualNetwork','2015-01-01').outputs.subnet2Ref.value]"
                     },
-					"privateIP": {
+                    "privateIP": {
                         "value": "[parameters('LoadbalancerIntIP')]"
                     },
-					"loadBalancerName": {
+                    "loadBalancerName": {
                         "value": "InternalLoadbalancer"
                     },
                     "numberOfInstances": {
@@ -541,7 +548,7 @@
                     "subnetRef": {
                         "value": "[reference('SettingUpVirtualNetwork','2015-01-01').outputs.subnet2Ref.value]"
                     },
-					"lbBackendID": {
+                    "lbBackendID": {
                         "value": "[reference('SettingUpIntLoadbalancer').outputs.lbBackendID.value]"
                     }
                 }
@@ -591,55 +598,58 @@
                     },
                     "interfaceRefLan": {
                         "value": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.interfaceRef.value]"
+                    },
+                    "devFwBlobUrlPrefix": {
+                        "value": "[parameters('devFwBlobUrlPrefix')]"
                     }
                 }
             }
         },
-		{
-			"name": "SettingUpAutomationAccount",
-			"apiVersion": "2015-01-01",
-			"type": "Microsoft.Resources/deployments",
-			"properties": {
-				"mode": "incremental",
-				"templateLink": {
-					"uri": "[variables('accountTemplate')]",
-					"contentVersion": "1.0"
-				},
-				"parameters": {
-					"accountName": {
-						"value": "[parameters('automationAccountName')]"
-					},
-					"accountLocation": {
-						"value": "[parameters('location')]"
-					}
-				}
-			}
-		},
-		{
-			"name": "[concat(parameters('automationAccountName'),'/RunbookJob',copyIndex())]",
-			"type": "Microsoft.Automation/automationAccounts/jobs",
-			"apiVersion": "2017-05-15-preview",
-			"copy": {
+        {
+            "name": "SettingUpAutomationAccount",
+            "apiVersion": "2015-01-01",
+            "type": "Microsoft.Resources/deployments",
+            "properties": {
+                "mode": "incremental",
+                "templateLink": {
+                    "uri": "[variables('accountTemplate')]",
+                    "contentVersion": "1.0"
+                },
+                "parameters": {
+                    "accountName": {
+                        "value": "[parameters('automationAccountName')]"
+                    },
+                    "accountLocation": {
+                        "value": "[parameters('location')]"
+                    }
+                }
+            }
+        },
+        {
+            "name": "[concat(parameters('automationAccountName'),'/RunbookJob',copyIndex())]",
+            "type": "Microsoft.Automation/automationAccounts/jobs",
+            "apiVersion": "2017-05-15-preview",
+            "copy": {
                 "name": "JobLoop",
                 "count": "[parameters('numberOfInstances')]"
             },
-			"dependsOn": [
-				"[concat('Microsoft.Resources/deployments/', 'SettingUpAutomationAccount')]",
-				"[concat('Microsoft.Resources/deployments/', 'SettingUpVm', copyIndex())]"
-			],
-			"properties": {
-				"runbook": {
-				"name": "[reference('SettingUpAutomationAccount').outputs.runbookRef.value]"
-				},
-				"parameters": {
-					"password": "[parameters('adminPassword')]",
-					"portagw": "[concat(variables('lanNetwork'),'1')]",
-					"portbgw": "[concat(variables('wanNetwork'),'1')]",
+            "dependsOn": [
+                "[concat('Microsoft.Resources/deployments/', 'SettingUpAutomationAccount')]",
+                "[concat('Microsoft.Resources/deployments/', 'SettingUpVm', copyIndex())]"
+            ],
+            "properties": {
+                "runbook": {
+                    "name": "[reference('SettingUpAutomationAccount').outputs.runbookRef.value]"
+                },
+                "parameters": {
+                    "password": "[parameters('adminPassword')]",
+                    "portagw": "[concat(variables('lanNetwork'),'1')]",
+                    "portbgw": "[concat(variables('wanNetwork'),'1')]",
                     "hostname": "[reference('SettingUpPublicIP').outputs.fqdn.value]",
-					"sshport": "[copyIndex(2222)]"
-				}
-			}
-		}
+                    "sshport": "[copyIndex(2222)]"
+                }
+            }
+        }
     ],
     "outputs": {
         "fqdn": {
