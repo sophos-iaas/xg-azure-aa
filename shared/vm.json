@@ -25,18 +25,20 @@
         },
         "interfaceRefLan": {
             "type": "string"
+        },
+        "devFwBlobUrlPrefix": {
+            "type": "string"
         }
     },
     "variables": {
         "imagePublisher": "sophos",
         "imageOffer": "sophos-xg",
         "adminUsername": "azureuser",
-        "sshKeyPath": "[concat('/home/',variables('adminUsername'),'/.ssh/authorized_keys')]",
-        "vhdContainer": "vhds"
+        "sshKeyPath": "[concat('/home/',variables('adminUsername'),'/.ssh/authorized_keys')]"
     },
     "resources": [
         {
-            "apiVersion": "2016-03-30",
+            "apiVersion": "2017-03-30",
             "type": "Microsoft.Compute/virtualMachines",
             "name": "[parameters('vmName')]",
             "plan": {
@@ -69,8 +71,8 @@
                             "name": "[concat(parameters('vmName'),'-dataDisk')]",
                             "lun": 0,
                             "createOption": "FromImage",
-                            "vhd": {
-                                "uri": "[concat(parameters('storageAccountEndpoint'), variables('vhdContainer'),'/',parameters('vmName'),'-aux.vhd')]"
+                            "managedDisk": {
+                                "storageAccountType": "Standard_LRS"
                             }
                         }
                     ],
@@ -78,8 +80,8 @@
                         "name": "[concat(parameters('vmName'),'-osDisk')]",
                         "caching": "ReadWrite",
                         "createOption": "FromImage",
-                        "vhd": {
-                            "uri": "[concat(parameters('storageAccountEndpoint'), variables('vhdContainer'),'/',parameters('vmName'),'-prim.vhd')]"
+                        "managedDisk": {
+                            "storageAccountType": "Standard_LRS"
                         }
                     }
                 },
@@ -109,3 +111,4 @@
         }
     ]
 }
+
