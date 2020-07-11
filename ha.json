@@ -278,7 +278,8 @@
                 "deployments": "2017-08-01"
             }
         },
-        "accountTemplate": "[concat(parameters('baseUrl'),'/shared/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json')]"
+        "accountTemplate": "[concat(parameters('baseUrl'),'/shared/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json')]",
+		"lanNetwork": "[substring(parameters('lanPrefix'),0,sub(length(parameters('lanPrefix')), 4))]"
     },
     "resources": [
         {
@@ -633,7 +634,7 @@
                 "parameters": {
                     "password": "[parameters('adminPassword')]",
                     "portaip": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.privateIp.value]",
-                    "portagw": "[concat(parameters('lanPrefix'),'1')]",
+                    "portagw": "[concat(variables('lanNetwork'),'1')]",
                     "hostname": "[reference('SettingUpPublicIP').outputs.fqdn.value]",
                     "sshport": "[copyIndex(2222)]"
                 }
