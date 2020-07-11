@@ -3,9 +3,9 @@ Param
   [Parameter (Mandatory= $true)]
   [String] $password,
   [Parameter (Mandatory= $true)]
-  [String] $portagw,
+  [String] $portaip,
   [Parameter (Mandatory= $true)]
-  [String] $portbgw,
+  [String] $portagw,
   [Parameter (Mandatory= $true)]
   [String] $hostname,
   [Parameter (Mandatory= $true)]
@@ -18,7 +18,7 @@ $SSHStream = New-SSHShellStream -SessionId $session.SessionId
 If ($session.Connected) {
     Start-Sleep -s 10
 	$SSHStream.WriteLine("a")
-    Start-Sleep -s 5
+	Start-Sleep -s 5
 	$SSHStream.WriteLine(" ")
 	$SSHStream.WriteLine(" ")
 	Start-Sleep -s 5
@@ -26,15 +26,17 @@ If ($session.Connected) {
     Start-Sleep -s 5
     $SSHStream.WriteLine("3")
     Start-Sleep -s 5
-    $SSHStream.WriteLine("telnet localhost zebra")
+    $SSHStream.WriteLine("mount -o remount,rw /")
     Start-Sleep -s 5
-    $SSHStream.WriteLine("enable")
+    $SSHStream.WriteLine("sed -i `"2i echo '200 azurespecialroutes' >> /etc/iproute2/rt_tables`" /scripts/system/clientpref/customization_application_startup.sh")
     Start-Sleep -s 5
-	$SSHStream.WriteLine("configure terminal")
+	$SSHStream.WriteLine("sed -i `"3i ip route add default via $portaip dev PortA table 200`" /scripts/system/clientpref/customization_application_startup.sh")
     Start-Sleep -s 5
-    $SSHStream.WriteLine("ip route 168.63.129.16/32 $portagw PortA")
-    Start-Sleep -s 3
-	$SSHStream.WriteLine("write")
+    $SSHStream.WriteLine("sed -i `"4i ip rule add from $portagw to 168.63.129.16 table 200`" /scripts/system/clientpref/customization_application_startup.sh")
+    Start-Sleep -s 5
+	$SSHStream.WriteLine("sed -i `"5i ip route flush cache`" /scripts/system/clientpref/customization_application_startup.sh")
+	Start-Sleep -s 5
+	$SSHStream.WriteLine("reboot")
     Start-Sleep -s 5
     $SSHStream.Read()  
     Remove-SSHSession -SessionId $session.SessionId > $null

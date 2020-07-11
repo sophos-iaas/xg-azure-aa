@@ -4,7 +4,7 @@
     "parameters": {
         "baseUrl": {
             "type": "string",
-            "defaultValue": "https://raw.githubusercontent.com/sophos-iaas/xg-azure-aa/master/",
+            "defaultValue": "https://raw.githubusercontent.com/iaasteamtemplates/xg-azure-aa/master/",
             "metadata": {
                 "artifactsBaseUrl": "Base URL of the template package"
             }
@@ -67,9 +67,9 @@
         },
         "netPrefix": {
             "type": "string",
-            "defaultValue": "10.0.0.0/16",
+            "defaultValue": "10.0.0.0",
             "metadata": {
-                "description": "Prefix for the Virtual Network."
+                "description": "Please provide the subnet value for the Virtual Network when creating a new vNet. Will be appended with /16."
             }
         },
         "wanName": {
@@ -81,9 +81,9 @@
         },
         "wanPrefix": {
             "type": "string",
-            "defaultValue": "10.0.1.0/24",
+            "defaultValue": "10.0.1.0",
             "metadata": {
-                "description": "Prefix for the WAN side Subnet. Note that each node only requires a single address, so it's recommended to limit subnet size to /24 or smaller."
+                "description": "Please provide the subnet value for the WAN subnet when creating a new vNet. Will be appended with /24."
             }
         },
         "lanName": {
@@ -95,9 +95,9 @@
         },
         "lanPrefix": {
             "type": "string",
-            "defaultValue": "10.0.2.0/24",
+            "defaultValue": "10.0.2.0",
             "metadata": {
-                "description": "Prefix for the LAN side Subnet. Note that each node only requires a single address, so it's recommended to limit subnet size to /24 or smaller."
+                "description": "Please provide the subnet value for the LAN subnet when creating a new vNet. Will be appended with /24."
             }
         },
         "LoadbalancerIntIP": {
@@ -411,19 +411,19 @@
                         "value": "[parameters('netName')]"
                     },
                     "virtualNetworkAddressPrefix": {
-                        "value": "[parameters('netPrefix')]"
+                        "value": "[concat(parameters('netPrefix'),'/16')]"
                     },
                     "Subnet1Name": {
                         "value": "[parameters('wanName')]"
                     },
                     "Subnet1Prefix": {
-                        "value": "[parameters('wanPrefix')]"
+                        "value": "[concat(parameters('wanPrefix'),'/24')]"
                     },
                     "Subnet2Name": {
                         "value": "[parameters('lanName')]"
                     },
                     "Subnet2Prefix": {
-                        "value": "[parameters('lanPrefix')]"
+                        "value": "[concat(parameters('lanPrefix'),'/24')]"
                     },
                     "vnetExistingRGName": {
                         "value": "[parameters('netRG')]"
@@ -644,8 +644,8 @@
                 },
                 "parameters": {
                     "password": "[parameters('adminPassword')]",
+                    "portaip": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.privateIp.value]",
                     "portagw": "[concat(variables('lanNetwork'),'1')]",
-                    "portbgw": "[concat(variables('wanNetwork'),'1')]",
                     "hostname": "[reference('SettingUpPublicIP').outputs.fqdn.value]",
                     "sshport": "[copyIndex(2222)]"
                 }

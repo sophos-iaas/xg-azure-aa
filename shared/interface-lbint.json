@@ -43,6 +43,10 @@
         "interfaceRef": {
             "value": "[resourceId('Microsoft.Network/networkInterfaces',parameters('interfaceName'))]",
             "type": "string"
-        }
+        },
+		"privateIp": {
+			"value": "[reference(concat(parameters('interfaceName'))).ipConfigurations[0].properties.privateIPAddress]",
+			"type": "string"
+		}
     }
 }
