@@ -633,7 +633,7 @@
                 "parameters": {
                     "password": "[parameters('adminPassword')]",
                     "portaip": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.privateIp.value]",
-                    "portagw": "[concat(parameters('lanNetwork'),'1')]",
+                    "portagw": "[concat(parameters('lanPrefix'),'1')]",
                     "hostname": "[reference('SettingUpPublicIP').outputs.fqdn.value]",
                     "sshport": "[copyIndex(2222)]"
                 }
