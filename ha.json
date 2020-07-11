@@ -269,7 +269,7 @@
         "interfaceLanTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lan.json')]",
         "interfaceLBTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lb.json')]",
         "interfaceLBIntTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lbint.json')]",
-        "vmTemplate": "[concat(parameters('baseUrl'),if(equals(parameters('devFwBlobUrlPrefix'), ''), '/shared/vm.json', '/shared/vm_dev.json'))]",
+        "vmTemplate": "[concat(parameters('baseUrl'),'/shared/vm.json')]",
         "LBTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancer.json')]",
         "LBIntTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancerint.json')]",
         "securityRuleAllowHTTPTemplate": "[concat(parameters('baseUrl'),'/shared/inboundSecurityRuleAllowHttp.json')]",
@@ -590,9 +590,6 @@
                     },
                     "interfaceRefLan": {
                         "value": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.interfaceRef.value]"
-                    },
-                    "devFwBlobUrlPrefix": {
-                        "value": "[parameters('devFwBlobUrlPrefix')]"
                     }
                 }
             }
