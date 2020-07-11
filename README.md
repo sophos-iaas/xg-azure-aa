@@ -9,7 +9,7 @@ Please reach out to your sales or channel representative to learn more about the
 
 1) Press the deployment button and enter your Azure credentials when prompted.
 
-[![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fiaasteamtemplates%2Fxg-azure-aa%2Fmaster%2Fha.json)
+[![Deploy to Azure](https://azuredeploy.net/deploybutton.png)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fsophos-iaas%2Fxg-azure-aa%2Fmaster%2Fha.json)
 
 **If invalid parameters are passed, the deployment will fail.**
 

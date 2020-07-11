@@ -19,7 +19,7 @@
         "version": "1.0.0.0",
         "description": "This runbook configures routing for the Azure Load Balancer Standard health check on the XG nodes in the Availability Set",
         "type": "PowerShell",
-        "scriptUri": "https://raw.githubusercontent.com/iaasteamtemplates/xg-azure-aa/master/shared/xg-aa.ps1"
+        "scriptUri": "https://raw.githubusercontent.com/sophos-iaas/xg-azure-aa/master/shared/xg-aa.ps1"
     },
 	"job": {
 		"name": "Run_XG-LB-routing"
