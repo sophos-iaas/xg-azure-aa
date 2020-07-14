@@ -67,9 +67,9 @@
         },
         "netPrefix": {
             "type": "string",
-            "defaultValue": "10.0.0.0/16",
+            "defaultValue": "10.0.0.0",
             "metadata": {
-                "description": "Prefix for the Virtual Network."
+                "description": "Please provide the subnet value for the Virtual Network when creating a new vNet. Will be appended with /16."
             }
         },
         "wanName": {
@@ -81,9 +81,9 @@
         },
         "wanPrefix": {
             "type": "string",
-            "defaultValue": "10.0.1.0/24",
+            "defaultValue": "10.0.1.0",
             "metadata": {
-                "description": "Prefix for the WAN side Subnet. Note that each node only requires a single address, so it's recommended to limit subnet size to /24 or smaller."
+                "description": "Please provide the subnet value for the WAN subnet when creating a new vNet. Will be appended with /24."
             }
         },
         "lanName": {
@@ -95,9 +95,9 @@
         },
         "lanPrefix": {
             "type": "string",
-            "defaultValue": "10.0.2.0/24",
+            "defaultValue": "10.0.2.0",
             "metadata": {
-                "description": "Prefix for the LAN side Subnet. Note that each node only requires a single address, so it's recommended to limit subnet size to /24 or smaller."
+                "description": "Please provide the subnet value for the LAN subnet when creating a new vNet. Will be appended with /24."
             }
         },
         "LoadbalancerIntIP": {
@@ -257,13 +257,6 @@
             "metadata": {
                 "description": "Enter the name of the Azure Automation account you wish to use / create. Note that when creating a new account the account name must be between 6 to 50 characters, and can contain only letters, numbers, and hyphens."
             }
-        },
-        "devFwBlobUrlPrefix": {
-            "type": "string",
-            "defaultValue": "",
-            "metadata": {
-                "description": "For development only! Specifies the blob URL prefix of a development firmware. Example: https://exampleimages.blob.core.windows.net/azi/SFAZ01_SO01.Release_17.0_CLOUD.17.00.0.007.byol"
-            }
         }
     },
     "variables": {
@@ -276,7 +269,7 @@
         "interfaceLanTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lan.json')]",
         "interfaceLBTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lb.json')]",
         "interfaceLBIntTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lbint.json')]",
-        "vmTemplate": "[concat(parameters('baseUrl'),if(equals(parameters('devFwBlobUrlPrefix'), ''), '/shared/vm.json', '/shared/vm_dev.json'))]",
+        "vmTemplate": "[concat(parameters('baseUrl'),'/shared/vm.json')]",
         "LBTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancer.json')]",
         "LBIntTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancerint.json')]",
         "securityRuleAllowHTTPTemplate": "[concat(parameters('baseUrl'),'/shared/inboundSecurityRuleAllowHttp.json')]",
@@ -286,8 +279,7 @@
             }
         },
         "accountTemplate": "[concat(parameters('baseUrl'),'/shared/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json')]",
-        "lanNetwork": "[substring(parameters('lanPrefix'),0,sub(length(parameters('lanPrefix')), 4))]",
-        "wanNetwork": "[substring(parameters('wanPrefix'),0,sub(length(parameters('wanPrefix')), 4))]"
+		"lanNetwork": "[substring(parameters('lanPrefix'),0,sub(length(parameters('lanPrefix')), 1))]"
     },
     "resources": [
         {
@@ -411,19 +403,19 @@
                         "value": "[parameters('netName')]"
                     },
                     "virtualNetworkAddressPrefix": {
-                        "value": "[parameters('netPrefix')]"
+                        "value": "[concat(parameters('netPrefix'),'/16')]"
                     },
                     "Subnet1Name": {
                         "value": "[parameters('wanName')]"
                     },
                     "Subnet1Prefix": {
-                        "value": "[parameters('wanPrefix')]"
+                        "value": "[concat(parameters('wanPrefix'),'/24')]"
                     },
                     "Subnet2Name": {
                         "value": "[parameters('lanName')]"
                     },
                     "Subnet2Prefix": {
-                        "value": "[parameters('lanPrefix')]"
+                        "value": "[concat(parameters('lanPrefix'),'/24')]"
                     },
                     "vnetExistingRGName": {
                         "value": "[parameters('netRG')]"
@@ -599,9 +591,6 @@
                     },
                     "interfaceRefLan": {
                         "value": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.interfaceRef.value]"
-                    },
-                    "devFwBlobUrlPrefix": {
-                        "value": "[parameters('devFwBlobUrlPrefix')]"
                     }
                 }
             }
@@ -644,8 +633,8 @@
                 },
                 "parameters": {
                     "password": "[parameters('adminPassword')]",
+                    "portaip": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.privateIp.value]",
                     "portagw": "[concat(variables('lanNetwork'),'1')]",
-                    "portbgw": "[concat(variables('wanNetwork'),'1')]",
                     "hostname": "[reference('SettingUpPublicIP').outputs.fqdn.value]",
                     "sshport": "[copyIndex(2222)]"
                 }
