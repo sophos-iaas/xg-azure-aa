@@ -8,10 +8,10 @@
         "subnetRef": {
             "type": "string"
         },
-        "publicIpId": {
+        "lbBackendID": {
             "type": "string"
         },
-        "networkSecurityGroupId": {
+        "location": {
             "type": "string"
         }
     },
@@ -20,22 +20,21 @@
             "apiVersion": "2016-03-30",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[parameters('interfaceName')]",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "properties": {
-                "networkSecurityGroup": {
-                    "id": "[parameters('networkSecurityGroupId')]"
-                },
                 "ipConfigurations": [
                     {
                         "name": "ipconfig",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "id": "[parameters('publicIpId')]"
-                            },
                             "subnet": {
                                 "id": "[parameters('subnetRef')]"
-                            }
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[parameters('lbBackendID')]"
+                                }
+                            ]
                         }
                     }
                 ],
@@ -47,6 +46,10 @@
         "interfaceRef": {
             "value": "[resourceId('Microsoft.Network/networkInterfaces',parameters('interfaceName'))]",
             "type": "string"
-        }
+        },
+        "privateIp": {
+			"value": "[reference(concat(parameters('interfaceName'))).ipConfigurations[0].properties.privateIPAddress]",
+			"type": "string"
+		}
     }
 }

@@ -10,6 +10,9 @@
         },
         "numberOfInstances": {
             "type": "int"
+        },
+        "location": {
+            "type": "string"
         }
     },
     "variables": {
@@ -30,7 +33,7 @@
             "apiVersion": "2017-08-01",
             "name": "[parameters('loadBalancerName')]",
             "type": "Microsoft.Network/loadBalancers",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
 			"sku":
             {
                 "name": "Standard"
@@ -90,7 +93,7 @@
             "apiVersion": "2016-03-30",
             "name": "[concat(parameters('loadBalancerName'), '/', variables('inboundNatName'), '-', copyIndex())]",
             "type": "Microsoft.Network/loadBalancers/inboundNatRules",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "copy": {
                 "name": "inboundNatLoop",
                 "count": "[parameters('numberOfInstances')]"
@@ -112,7 +115,7 @@
             "apiVersion": "2016-03-30",
             "name": "[concat(parameters('loadBalancerName'), '/', variables('inboundNatSshName'), '-', copyIndex())]",
             "type": "Microsoft.Network/loadBalancers/inboundNatRules",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "copy": {
                 "name": "inboundNatSshLoop",
                 "count": "[parameters('numberOfInstances')]"

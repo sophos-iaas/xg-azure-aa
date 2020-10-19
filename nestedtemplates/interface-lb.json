@@ -10,6 +10,18 @@
         },
         "lbBackendID": {
             "type": "string"
+        },
+        "inboundNatID": {
+            "type": "string"
+        },
+        "inboundNatSshID": {
+            "type": "string"
+        },
+        "networkSecurityGroupId": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
         }
     },
     "resources": [
@@ -17,8 +29,11 @@
             "apiVersion": "2016-03-30",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[parameters('interfaceName')]",
-            "location": "[resourceGroup().location]",
+            "location": "[parameters('location')]",
             "properties": {
+                "networkSecurityGroup": {
+                    "id": "[parameters('networkSecurityGroupId')]"
+                },
                 "ipConfigurations": [
                     {
                         "name": "ipconfig",
@@ -30,6 +45,14 @@
                             "loadBalancerBackendAddressPools": [
                                 {
                                     "id": "[parameters('lbBackendID')]"
+                                }
+                            ],
+                            "loadBalancerInboundNatRules": [
+                                {
+                                    "id": "[parameters('inboundNatID')]"
+                                },
+                                {
+                                    "id": "[parameters('inboundNatSshID')]"
                                 }
                             ]
                         }
@@ -43,10 +66,6 @@
         "interfaceRef": {
             "value": "[resourceId('Microsoft.Network/networkInterfaces',parameters('interfaceName'))]",
             "type": "string"
-        },
-		"privateIp": {
-			"value": "[reference(concat(parameters('interfaceName'))).ipConfigurations[0].properties.privateIPAddress]",
-			"type": "string"
-		}
+        }
     }
 }
