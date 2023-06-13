@@ -2,19 +2,12 @@
     "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "_artifactsLocation": {
+        "baseUrl": {
             "type": "string",
             "defaultValue": "https://raw.githubusercontent.com/sophos-iaas/xg-azure-aa/master/",
             "metadata": {
                 "artifactsBaseUrl": "Base URL of the template package"
             }
-        },
-        "_artifactsLocationSasToken": {
-          "type": "securestring",
-          "metadata": {
-              "description": "The sasToken required to access _artifactsLocation.  When the template is deployed using the accompanying scripts, a sasToken will be automatically generated. Use the defaultValue if the staging location is not secured."
-          },
-          "defaultValue": ""
         },
         "vmName": {
             "type": "string",
@@ -114,6 +107,17 @@
                 "description": "IP address for the internal Load Balancer."
             }
         },
+        "publicIpNewOrExisting": {
+            "type": "string",
+            "defaultValue": "new",
+            "allowedValues": [
+                "new",
+                "existing"
+            ],
+            "metadata": {
+                "description": "Create new Public IP or use an existing one."
+            }
+        },
         "publicIpRG": {
             "type": "string",
             "defaultValue": "",
@@ -163,6 +167,13 @@
             "defaultValue": "Standard_LRS",
             "metadata": {
                 "description": "Replication mode for Storage Account."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().Location]",
+            "metadata": {
+                "description": "Geo-Location you want to deploy to."
             }
         },
         "nicWan": {
@@ -237,7 +248,6 @@
                 "new",
                 "existing"
             ],
-            "defaultValue": "new",
             "metadata": {
                 "description": "Create a new Azure Automation account or select an existing account to use for XG automation. WARNING: Automation account names are unique, so reusing an account name when creating a new account will overwirte the existing account!."
             }
@@ -247,35 +257,29 @@
             "metadata": {
                 "description": "Enter the name of the Azure Automation account you wish to use / create. Note that when creating a new account the account name must be between 6 to 50 characters, and can contain only letters, numbers, and hyphens."
             }
-        },
-        "automationAccountLocation": {
-            "type": "string",
-            "defaultValue": "[resourceGroup().Location]",
-            "metadata": {
-                "description": "Geo-Location you want to deploy your automation account to."
-            }
         }
     },
     "variables": {
-        "publicIpTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/publicip-new.json', parameters('_artifactsLocationSasToken')))]",
-        "netTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/vnet-',parameters('netNewOrExisting'),'.json', parameters('_artifactsLocationSasToken')))]",
-        "storageTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/storageAccount-',parameters('storageNewOrExisting'),'.json', parameters('_artifactsLocationSasToken')))]",
-        "availabilitySetTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/availabilitySet-',parameters('availabilitySetNewOrExisting'),'.json', parameters('_artifactsLocationSasToken')))]",
-        "networkSecurityGroupTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/networkSecurityGroup-',parameters('networkSecurityGroupNewOrExisting'),'.json', parameters('_artifactsLocationSasToken')))]",
-        "interfaceLBTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/interface-lb.json', parameters('_artifactsLocationSasToken')))]",
-        "interfaceLBIntTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/interface-lbint.json', parameters('_artifactsLocationSasToken')))]",
-        "vmTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/vm.json', parameters('_artifactsLocationSasToken')))]",
-        "LBTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/loadbalancer.json', parameters('_artifactsLocationSasToken')))]",
-        "LBIntTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/loadbalancerint.json', parameters('_artifactsLocationSasToken')))]",
-        "securityRuleAllowHTTPTemplate": "[uri(parameters('_artifactsLocation'), concat('nestedtemplates/inboundSecurityRuleAllowHttp.json', parameters('_artifactsLocationSasToken')))]",
+        "publicIpTemplate": "[concat(parameters('baseUrl'),'/shared/publicip-',parameters('publicIpNewOrExisting'),'.json')]",
+        "netTemplate": "[concat(parameters('baseUrl'),'/shared/vnet-',parameters('netNewOrExisting'),'.json')]",
+        "storageTemplate": "[concat(parameters('baseUrl'),'/shared/storageAccount-',parameters('storageNewOrExisting'),'.json')]",
+        "availabilitySetTemplate": "[concat(parameters('baseUrl'),'/shared/availabilitySet-',parameters('availabilitySetNewOrExisting'),'.json')]",
+        "networkSecurityGroupTemplate": "[concat(parameters('baseUrl'),'/shared/networkSecurityGroup-',parameters('networkSecurityGroupNewOrExisting'),'.json')]",
+        "interfaceWanTemplate": "[concat(parameters('baseUrl'),'/shared/interface-wan.json')]",
+        "interfaceLanTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lan.json')]",
+        "interfaceLBTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lb.json')]",
+        "interfaceLBIntTemplate": "[concat(parameters('baseUrl'),'/shared/interface-lbint.json')]",
+        "vmTemplate": "[concat(parameters('baseUrl'),'/shared/vm.json')]",
+        "LBTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancer.json')]",
+        "LBIntTemplate": "[concat(parameters('baseUrl'),'/shared/loadbalancerint.json')]",
+        "securityRuleAllowHTTPTemplate": "[concat(parameters('baseUrl'),'/shared/inboundSecurityRuleAllowHttp.json')]",
         "apiVersion": {
             "resources": {
                 "deployments": "2017-08-01"
             }
         },
-        "accountTemplate": "[concat(parameters('_artifactsLocation'), concat('nestedtemplates/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json', parameters('_artifactsLocationSasToken')))]",
-        "lanNetwork": "[substring(parameters('lanPrefix'),0,sub(length(parameters('lanPrefix')), 1))]",
-        "location": "[resourceGroup().Location]"
+        "accountTemplate": "[concat(parameters('baseUrl'),'/shared/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json')]",
+		"lanNetwork": "[substring(parameters('lanPrefix'),0,sub(length(parameters('lanPrefix')), 1))]"
     },
     "resources": [
         {
@@ -291,9 +295,6 @@
                 "parameters": {
                     "availabilitySetName": {
                         "value": "[parameters('availabilitySetName')]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -317,9 +318,6 @@
                     },
                     "storageAccountExistingRG": {
                         "value": "[parameters('storageRG')]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -340,9 +338,6 @@
                     },
                     "trustedNetwork": {
                         "value": "[parameters('trustedNetwork')]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -366,9 +361,6 @@
                     },
                     "trustedNetwork": {
                         "value": "*"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -392,9 +384,6 @@
                     },
                     "publicIpRGName": {
                         "value": "[parameters('publicIpRG')]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -430,9 +419,6 @@
                     },
                     "vnetExistingRGName": {
                         "value": "[parameters('netRG')]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -459,9 +445,6 @@
                     },
                     "numberOfInstances": {
                         "value": "[parameters('numberOfInstances')]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -503,9 +486,6 @@
                     },
                     "networkSecurityGroupId": {
                         "value": "[reference('SettingUpNetworkSecurityGroup','2015-01-01').outputs.networkSecurityGroupName.value]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -532,9 +512,6 @@
                     },
                     "numberOfInstances": {
                         "value": "[parameters('numberOfInstances')]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -565,9 +542,6 @@
                     },
                     "lbBackendID": {
                         "value": "[reference('SettingUpIntLoadbalancer').outputs.lbBackendID.value]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -617,9 +591,6 @@
                     },
                     "interfaceRefLan": {
                         "value": "[reference(concat('SettingUpInterfaceLan', copyIndex()),'2015-01-01').outputs.interfaceRef.value]"
-                    },
-                    "location": {
-                        "value": "[variables('location')]"
                     }
                 }
             }
@@ -632,14 +603,14 @@
                 "mode": "incremental",
                 "templateLink": {
                     "uri": "[variables('accountTemplate')]",
-                    "contentVersion": "1.0.0.0"
+                    "contentVersion": "1.0"
                 },
                 "parameters": {
                     "accountName": {
                         "value": "[parameters('automationAccountName')]"
                     },
                     "accountLocation": {
-                        "value": "[parameters('automationAccountLocation')]"
+                        "value": "[parameters('location')]"
                     }
                 }
             }

@@ -25,9 +25,6 @@
         },
         "interfaceRefLan": {
             "type": "string"
-        },
-        "location": {
-            "type": "string"
         }
     },
     "variables": {
@@ -46,7 +43,7 @@
                 "product": "[variables('imageOffer')]",
                 "name": "[parameters('imageSku')]"
             },
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
                 "availabilitySet": {
                     "id": "[parameters('availabilitySetId')]"

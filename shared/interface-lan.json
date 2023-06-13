@@ -7,15 +7,6 @@
         },
         "subnetRef": {
             "type": "string"
-        },
-        "publicIpId": {
-            "type": "string"
-        },
-        "networkSecurityGroupId": {
-            "type": "string"
-        },
-        "location": {
-            "type": "string"
         }
     },
     "resources": [
@@ -23,19 +14,13 @@
             "apiVersion": "2016-03-30",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[parameters('interfaceName')]",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
-                "networkSecurityGroup": {
-                    "id": "[parameters('networkSecurityGroupId')]"
-                },
                 "ipConfigurations": [
                     {
                         "name": "ipconfig",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "id": "[parameters('publicIpId')]"
-                            },
                             "subnet": {
                                 "id": "[parameters('subnetRef')]"
                             }

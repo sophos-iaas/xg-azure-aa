@@ -1,7 +1,7 @@
 Param
 (
   [Parameter (Mandatory= $true)]
-  [SecureString] $password,
+  [String] $password,
   [Parameter (Mandatory= $true)]
   [String] $portaip,
   [Parameter (Mandatory= $true)]

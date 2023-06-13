@@ -8,7 +8,16 @@
         "subnetRef": {
             "type": "string"
         },
-        "location": {
+        "lbBackendID": {
+            "type": "string"
+        },
+        "inboundNatID": {
+            "type": "string"
+        },
+        "inboundNatSshID": {
+            "type": "string"
+        },
+        "networkSecurityGroupId": {
             "type": "string"
         }
     },
@@ -17,8 +26,11 @@
             "apiVersion": "2016-03-30",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[parameters('interfaceName')]",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
             "properties": {
+                "networkSecurityGroup": {
+                    "id": "[parameters('networkSecurityGroupId')]"
+                },
                 "ipConfigurations": [
                     {
                         "name": "ipconfig",
@@ -26,7 +38,20 @@
                             "privateIPAllocationMethod": "Dynamic",
                             "subnet": {
                                 "id": "[parameters('subnetRef')]"
-                            }
+                            },
+                            "loadBalancerBackendAddressPools": [
+                                {
+                                    "id": "[parameters('lbBackendID')]"
+                                }
+                            ],
+                            "loadBalancerInboundNatRules": [
+                                {
+                                    "id": "[parameters('inboundNatID')]"
+                                },
+                                {
+                                    "id": "[parameters('inboundNatSshID')]"
+                                }
+                            ]
                         }
                     }
                 ],

@@ -13,9 +13,6 @@
         },
         "numberOfInstances": {
             "type": "int"
-        },
-        "location": {
-            "type": "string"
         }
     },
     "variables": {
@@ -32,7 +29,7 @@
             "apiVersion": "2017-08-01",
             "name": "[parameters('loadBalancerName')]",
             "type": "Microsoft.Network/loadBalancers",
-            "location": "[parameters('location')]",
+            "location": "[resourceGroup().location]",
 			"sku":
             {
                 "name": "Standard"
