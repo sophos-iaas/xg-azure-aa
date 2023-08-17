@@ -29,7 +29,7 @@
     },
     "variables": {
         "imagePublisher": "sophos",
-        "imageOffer": "sophos-xg",
+        "imageOffer": "sophos firewall",
         "adminUsername": "azureuser",
         "sshKeyPath": "[concat('/home/',variables('adminUsername'),'/.ssh/authorized_keys')]"
     },
