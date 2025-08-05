@@ -10,6 +10,25 @@
         },
         "numberOfInstances": {
             "type": "int"
+        },
+        "outboundRuleName": {
+            "type": "string",
+            "defaultValue": "loadBalancerBackEnd",
+            "metadata": {
+                "description": "Name of the outbound rule"
+            }
+        },
+        "outboundRuleProtocol": {
+            "type": "string",
+            "defaultValue": "All",
+            "allowedValues": [
+                "Tcp",
+                "Udp",
+                "All"
+            ],
+            "metadata": {
+                "description": "Protocol for the outbound rule"
+            }
         }
     },
     "variables": {
@@ -23,11 +42,12 @@
         "lbBackendID": "[concat(variables('lbID'),'/backendAddressPools/',variables('lbBackendName'))]",
         "lbProbeID": "[concat(variables('lbID'),'/probes/',variables('probeName'))]",
         "inboundNatIDPrefix": "[concat(variables('lbID'),'/inboundNatRules/',variables('inboundNatName'),'-')]",
+        "outboundRuleID": "[resourceId('Microsoft.Network/loadBalancers/outboundRules', parameters('loadBalancerName'), parameters('outboundRuleName'))]",
         "inboundNatSshIDPrefix": "[concat(variables('lbID'),'/inboundNatRules/',variables('inboundNatSshName'),'-')]"
     },
     "resources": [
         {
-            "apiVersion": "2017-08-01",
+            "apiVersion": "2019-08-01",
             "name": "[parameters('loadBalancerName')]",
             "type": "Microsoft.Network/loadBalancers",
             "location": "[resourceGroup().location]",
@@ -69,7 +89,8 @@
                             },
                             "probe": {
                                 "id": "[variables('lbProbeID')]"
-                            }
+                            },
+                            "disableOutboundSnat": true
                         }
                     }
                 ],
@@ -81,6 +102,25 @@
                             "port": 4444,
                             "intervalInSeconds": 5,
                             "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "outboundRules": [
+                    {
+                        "name": "[parameters('outboundRuleName')]",
+                        "properties": {
+                            "allocatedOutboundPorts": 31968,
+                            "protocol": "[parameters('outboundRuleProtocol')]",
+                            "enableTcpReset": true,
+                            "idleTimeoutInMinutes": 4,
+                            "backendAddressPool": {
+                                "id": "[variables('lbBackendID')]"
+                            },
+                            "frontendIPConfigurations": [
+                                {
+                                    "id": "[variables('lbFrontendID')]"
+                                }
+                            ]
                         }
                     }
                 ]
@@ -146,6 +186,10 @@
         },
         "inboundNatIDPrefix": {
             "value": "[variables('inboundNatIDPrefix')]",
+            "type": "string"
+        },
+        "outboundRuleID": {
+            "value": "[variables('outboundRuleID')]",
             "type": "string"
         },
         "inboundNatSshIDPrefix": {

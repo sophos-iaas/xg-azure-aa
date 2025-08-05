@@ -236,8 +236,7 @@
         "numberOfInstances": {
             "type": "int",
             "defaultValue": 2,
-            "minValue": 1,
-            "maxValue": 5,
+            "allowedValues": [2],
             "metadata": {
                 "description": "Number of XG Firewall instances to be deployed."
             }
@@ -275,7 +274,7 @@
         "securityRuleAllowHTTPTemplate": "[concat(parameters('baseUrl'),'/shared/inboundSecurityRuleAllowHttp.json')]",
         "apiVersion": {
             "resources": {
-                "deployments": "2017-08-01"
+                "deployments": "2019-08-01"
             }
         },
         "accountTemplate": "[concat(parameters('baseUrl'),'/shared/AAAccountTemplate-', parameters('automationAccountNewOrExisting'),'.json')]",
