@@ -11,19 +11,13 @@
         "lbBackendID": {
             "type": "string"
         },
-        "inboundNatID": {
-            "type": "string"
-        },
-        "inboundNatSshID": {
-            "type": "string"
-        },
         "networkSecurityGroupId": {
             "type": "string"
         }
     },
     "resources": [
         {
-            "apiVersion": "2016-03-30",
+            "apiVersion": "2022-07-01",
             "type": "Microsoft.Network/networkInterfaces",
             "name": "[parameters('interfaceName')]",
             "location": "[resourceGroup().location]",
@@ -42,14 +36,6 @@
                             "loadBalancerBackendAddressPools": [
                                 {
                                     "id": "[parameters('lbBackendID')]"
-                                }
-                            ],
-                            "loadBalancerInboundNatRules": [
-                                {
-                                    "id": "[parameters('inboundNatID')]"
-                                },
-                                {
-                                    "id": "[parameters('inboundNatSshID')]"
                                 }
                             ]
                         }

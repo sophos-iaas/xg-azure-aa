@@ -477,12 +477,6 @@
                     "lbBackendID": {
                         "value": "[reference('SettingUpLoadbalancer').outputs.lbBackendID.value]"
                     },
-                    "inboundNatID": {
-                        "value": "[concat(reference('SettingUpLoadbalancer').outputs.inboundNatIDPrefix.value, copyIndex())]"
-                    },
-                    "inboundNatSshID": {
-                        "value": "[concat(reference('SettingUpLoadbalancer').outputs.inboundNatSshIDPrefix.value, copyIndex())]"
-                    },
                     "networkSecurityGroupId": {
                         "value": "[reference('SettingUpNetworkSecurityGroup','2015-01-01').outputs.networkSecurityGroupName.value]"
                     }
